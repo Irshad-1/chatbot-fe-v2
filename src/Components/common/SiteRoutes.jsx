@@ -10,17 +10,17 @@ import QuestionAnswerDisplay from "../QuestionAnswerDisplay";
 function SiteRoutes() {
     return (
         <>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/page-not-found" element={<PageNotFound />} />
-                    <Route path="*" element={<Navigate to="/page-not-found" />} />
-                    <Route path='/' element={<Details />} />
-                    <Route path='/signup' element={<Signup />} />
-                    <Route path='/login' element={<Login />} />
-                    <Route path="/feed-question" element={<QuestionFeed />} />
-                    <Route path="/question-answer-table" element={<QuestionAnswerDisplay />} />
-                </Routes>
-            </BrowserRouter>
+
+            <Routes>
+                <Route path="/page-not-found" element={<PageNotFound />} />
+                <Route path="*" element={<Navigate to="/page-not-found" />} />
+                <Route path='/' element={<Details />} />
+                <Route path='/signup' element={<Signup />} />
+                <Route path='/login' element={<Login />} />
+                <Route path="/feed-question" element={<QuestionFeed />} />
+                <Route path="/question-answer-table" element={<QuestionAnswerDisplay />} />
+            </Routes>
+
         </>
     );
 }

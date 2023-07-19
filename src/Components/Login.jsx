@@ -87,6 +87,7 @@ export const Login = () => {
                 type="text"
                 name="email"
                 placeholder="Enter email"
+                _focusVisible={{ backgroundColor: "white" }}
                 isInvalid={errors.email && touched.email}
               />
               <FormErrorMessage>{errors.email}</FormErrorMessage>
@@ -99,6 +100,7 @@ export const Login = () => {
               <Field
                 as={Input}
                 variant="filled"
+                _focusVisible={{ backgroundColor: "white" }}
                 type="password"
                 name="password"
                 placeholder="Enter password"

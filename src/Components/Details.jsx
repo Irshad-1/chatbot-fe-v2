@@ -19,7 +19,6 @@ import Swal from 'sweetalert2';
 export const Details = () => {
   const navigate = useNavigate();
   const [data, setData] = useState({});
-  const [userData, setUserData] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [isProjectManager, setIsProjectManager] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -28,10 +27,8 @@ export const Details = () => {
   async function getUser(token) {
     try {
       let res = await API.get('/getuser');
-      console.log('I am here', res);
       setData(res.data);
       if (res.data.role === 'project manager') {
-        console.log('Hello');
         setIsProjectManager(true);
         getUsersData(token);
       }
@@ -50,7 +47,6 @@ export const Details = () => {
       res = res.data;
       console.log(res);
       setTickets(res);
-      // setUserData(res);
     } catch (error) {
       console.log(error);
     }
@@ -59,7 +55,7 @@ export const Details = () => {
     try {
       setChatResponse('');
       let res = await API.post('/send-message', { message });
-      setChatResponse(res.data.result.answer);
+      setChatResponse(res.data.result);
     } catch (error) {
       Swal.fire({
         title: 'Failed!',
@@ -80,16 +76,16 @@ export const Details = () => {
   }, []);
   return (
     <>
-      <Text position="absolute" top="25" right="25" fontSize='xl' color="#2B4865" cursor="pointer">{`Hi ${data.firstName}`}</Text>
-      <Button
-        position="absolute"
-        right="100"
-        top="18"
-        colorScheme="red"
-        onClick={handleLogout}
-      >
-        Logout
-      </Button>
+      <Box display="flex" justifyContent="flex-end" marginRight="50px" alignItems="center" position="absolute" right="0" top="25">
+        <Button
+          colorScheme="red"
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+        <Text fontSize='xl' color="#2B4865" cursor="pointer">{`Hi ${data?.firstName || ""}`}</Text>
+
+      </Box>
       <form
         onSubmit={e => {
           e.preventDefault();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, FormControl, FormLabel, Input, Button, useToast, FormErrorMessage, Select } from '@chakra-ui/react';
-import { Formik, Field } from "formik";
+import { Formik, Field, Form } from "formik";
 import { useNavigate } from 'react-router-dom';
 import API from "../Utils/axios";
 
@@ -73,7 +73,7 @@ export const Signup = () => {
 
                     return (
 
-                        <form onSubmit={handleSubmit}>
+                        <Form>
                             <FormControl padding="20px 0px" isInvalid={errors.firstName && touched.firstName}>
                                 <FormLabel>First Name</FormLabel>
                                 <Field type="text" name="firstName" placeholder='Enter First Name' variant="filled" _focusVisible={{ backgroundColor: "white" }} as={Input} />
@@ -123,7 +123,7 @@ export const Signup = () => {
 
                             </FormControl>
                             <Button colorScheme="blue" type="submit">Sign Up</Button>
-                        </form>
+                        </Form>
 
                     )
                 }}
