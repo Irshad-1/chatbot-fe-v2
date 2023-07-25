@@ -22,9 +22,9 @@ export const Login = () => {
 
   const handleLogin = async ({ email, password }) => {
     try {
-      dispatch(LoaderAction.loaderStart());
+
       let res = await API.post("login", { email, password });
-      dispatch(LoaderAction.loaderStop());
+
       if (res.data.token) {
         sessionStorage.setItem('intechnology', res.data.token);
         toast({
@@ -45,7 +45,7 @@ export const Login = () => {
         });
       }
     } catch (error) {
-      dispatch(LoaderAction.loaderStop());
+
       console.log(error);
     }
   };

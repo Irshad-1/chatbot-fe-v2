@@ -11,10 +11,14 @@ import {
   Tbody,
   Td,
   Text,
+  CircularProgress
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import API from '../Utils/axios';
 import Swal from 'sweetalert2';
+import { AiOutlineSend } from "react-icons/ai";
+import { LoaderAction } from "../Redux/Loader";
+import { useSelector, useDispatch } from 'react-redux';
 
 export const Details = () => {
   const navigate = useNavigate();
@@ -23,8 +27,10 @@ export const Details = () => {
   const [isProjectManager, setIsProjectManager] = useState(false);
   const [inputText, setInputText] = useState('');
   const [chatResponse, setChatResponse] = useState('');
-  const [botQuestion, setBotQuestion] = useState("");
-  const [isBotQuestion, setIsBotQuestion] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [linkedQuestion, setLinkedQuestion] = useState({});
+  const dispatch = useDispatch();
+  const loader = useSelector(state => state.loader.loader);
 
 
   async function getUser(token) {
@@ -56,18 +62,19 @@ export const Details = () => {
   };
   async function chat(message) {
     try {
+      dispatch(LoaderAction.loaderStart());
       setChatResponse('');
+      setChatHistory([]);
+      const time = new Date();
       let res = await API.post('/send-message', { message });
+      dispatch(LoaderAction.loaderStop());
       setChatResponse(res.data.result);
+      setChatHistory([{ chatType: "SA", timestamp: generateTime(time), chatItem: { ans: res.data.result } }])
       if (res?.data?.linkedQuestion) {
-        setIsBotQuestion(true);
-        setBotQuestion(
-          res?.data?.linkedQuestion
-        );
+        setLinkedQuestion(res.data.linkedQuestion);
+        setChatHistory((prev) => { return [...prev, { chatType: 'SQ', chatItem: res.data.linkedQuestion, timestamp: generateTime(time) }] });
       }
-      else {
-        setIsBotQuestion(false);
-      }
+
     } catch (error) {
       Swal.fire({
         title: 'Failed!',
@@ -88,10 +95,28 @@ export const Details = () => {
   }, []);
   const fireAction = async (actionId) => {
     try {
+      dispatch(LoaderAction.loaderStart());
       let res = await API.post('/fire-action', { actionId });
-      console.log(res);
-      setChatResponse(res.data.message);
-      setIsBotQuestion(false);
+      dispatch(LoaderAction.loaderStop());
+      const time = new Date();
+      setChatHistory((prev) => {
+        return [...prev, {
+          chatType: "UA", timestamp: generateTime(time), chatItem: {
+            ans: "Yes"
+          }
+        }]
+      }
+      );
+      setChatHistory((prev) => {
+        return [...prev, { chatType: "SA", timestamp: generateTime(time), chatItem: { ans: res.data.message } }]
+      });
+      if (linkedQuestion?.linkedQuestion) {
+
+        setChatHistory((prev) => {
+          return [...prev, { chatType: "SQ", chatItem: linkedQuestion?.linkedQuestion, timestamp: generateTime(time) }]
+        });
+        setLinkedQuestion({});
+      }
     } catch (error) {
       Swal.fire({
         title: 'Failed!',
@@ -101,11 +126,15 @@ export const Details = () => {
       });
     }
   }
+
+  const generateTime = (time) => {
+    return time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+  }
   return (
     <>
       <Box display="flex" justifyContent="flex-end" marginRight="50px" alignItems="center" position="absolute" right="0" top="25">
 
-        <Text fontSize='xl' color="#2B4865" cursor="pointer">{`Hi ${data?.firstName || ""}`}</Text>
+        <Text fontSize='xl' color="#2B4865" cursor="pointer" paddingRight="10px">{`Hi ${data?.firstName || ""}`}</Text>
         <Button
           colorScheme="red"
           onClick={handleLogout}
@@ -133,12 +162,13 @@ export const Details = () => {
             }`}</Heading>
         </Box> */}
         <Box
-          width="40%"
+          width="60%"
           margin="40px auto"
           boxShadow="lg"
           p="6"
           rounded="md"
           bg="#d9d9d9"
+          display="flex"
         >
           <Input
             value={inputText}
@@ -146,22 +176,80 @@ export const Details = () => {
             type="text"
             placeholder="Enter your query here"
             bg="white"
+            marginRight={'20px'}
           />
-          <Button colorScheme="green" type="submit">
-            Send
+          <Button colorScheme="green" fontSize="30px" type="submit">
+            <AiOutlineSend />
           </Button>
+
         </Box>
-        <Box width="60%" m="auto">
-          <Text fontSize="xl">{chatResponse}</Text>
-          {isBotQuestion && (<><Text fontSize="xl" color='rgb(0, 123, 255)	' fontWeight="bold">{`Chatbot:${botQuestion?.question}`}</Text>
+        {loader ? <Box display="flex" justifyContent="center">
+          <CircularProgress
+            isIndeterminate
+            color="blue.600"
+            size="200px"
+            thickness="5px"
+          />
+        </Box> : chatHistory.length > 0 && (<Box width="60%" m="auto" bg="#DDE6ED" padding="20px" rounded="md">
+
+          {chatHistory.length > 0 && chatHistory?.map((item) => {
+            if (item?.chatType === "SA") {
+              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl">{item.chatItem.ans}</Text>
+                <Text fontSize="sm">{item.timestamp}</Text>
+              </Box>)
+            }
+            else if (item?.chatType === "SQ") {
+              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl" color='rgb(0, 123, 255)	' fontWeight="bold">{item?.chatItem?.question}</Text> <Text fontSize="sm">{item.timestamp}</Text>
+              </Box>)
+            }
+            else if (item?.chatType === "UA") {
+              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl">{item?.chatItem?.ans}</Text>
+                <Text fontSize="sm">{item.timestamp}</Text>
+              </Box>)
+            }
+          }
+          )}
+          {chatHistory?.length > 0 &&
+            chatHistory[chatHistory.length - 1].chatType == "SQ" && (<>
+              <Button colorScheme="green" onClick={() => { fireAction(chatHistory[chatHistory?.length - 1].chatItem?.action) }}>
+                Yes
+              </Button>
+              <Button colorScheme="red" onClick={() => {
+                const time = new Date();
+                setChatHistory((prev) => {
+                  return [...prev, {
+                    chatType: "UA", timestamp: generateTime(time), chatItem: {
+                      ans: "No"
+                    }
+                  }]
+                }
+                );
+              }}>No</Button></>
+            )
+          }
+
+
+
+          {/* <Text fontSize="xl">{chatResponse}</Text>
+          {isBotQuestion && (<><Text fontSize="xl" color='rgb(0, 123, 255)	' fontWeight="bold">{botQuestion?.question}</Text>
             <Button colorScheme="green" onClick={() => { fireAction(botQuestion?.action) }}>
               Yes
             </Button>
             <Button colorScheme="red" onClick={() => {
-              setChatResponse("");
               setIsBotQuestion(false);
             }}>No</Button></>)}
-        </Box>
+          {
+            isBotQuestion &&
+            <Text fontSize="xl">{botResponse}</Text>
+          }
+          {isAnotherBotQuestion && (<><Text fontSize="xl" color='rgb(0, 123, 255)	' fontWeight="bold">{anotherBotQuestion?.question}</Text>
+            <Button colorScheme="green" onClick={() => { fireAction(anotherBotQuestion?.action) }}>
+              Yes
+            </Button>
+            <Button colorScheme="red" onClick={() => {
+              setIsBotQuestion(false);
+            }}>No</Button></>)} */}
+        </Box>)}
 
         {isProjectManager && (
           <Box width="80%" margin="40px auto">

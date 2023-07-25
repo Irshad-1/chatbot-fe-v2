@@ -41,7 +41,7 @@ function App() {
           </Button>
         </>
       )}
-      {loader ? (
+      {/* {loader ? (
         <Box display="flex" justifyContent="center">
           <CircularProgress
             isIndeterminate
@@ -52,7 +52,8 @@ function App() {
         </Box>
       ) : (
         <SiteRoutes />
-      )}
+      )} */}
+      <SiteRoutes />
     </ChakraProvider>
   );
 }
