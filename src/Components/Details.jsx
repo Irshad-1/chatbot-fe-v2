@@ -23,6 +23,9 @@ export const Details = () => {
   const [isProjectManager, setIsProjectManager] = useState(false);
   const [inputText, setInputText] = useState('');
   const [chatResponse, setChatResponse] = useState('');
+  const [botQuestion, setBotQuestion] = useState("");
+  const [isBotQuestion, setIsBotQuestion] = useState(false);
+
 
   async function getUser(token) {
     try {
@@ -56,6 +59,15 @@ export const Details = () => {
       setChatResponse('');
       let res = await API.post('/send-message', { message });
       setChatResponse(res.data.result);
+      if (res?.data?.linkedQuestion) {
+        setIsBotQuestion(true);
+        setBotQuestion(
+          res?.data?.linkedQuestion
+        );
+      }
+      else {
+        setIsBotQuestion(false);
+      }
     } catch (error) {
       Swal.fire({
         title: 'Failed!',
@@ -74,17 +86,32 @@ export const Details = () => {
       getUser(token);
     }
   }, []);
+  const fireAction = async (actionId) => {
+    try {
+      let res = await API.post('/fire-action', { actionId });
+      console.log(res);
+      setChatResponse(res.data.message);
+      setIsBotQuestion(false);
+    } catch (error) {
+      Swal.fire({
+        title: 'Failed!',
+        text: error.message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    }
+  }
   return (
     <>
       <Box display="flex" justifyContent="flex-end" marginRight="50px" alignItems="center" position="absolute" right="0" top="25">
+
+        <Text fontSize='xl' color="#2B4865" cursor="pointer">{`Hi ${data?.firstName || ""}`}</Text>
         <Button
           colorScheme="red"
           onClick={handleLogout}
         >
           Logout
         </Button>
-        <Text fontSize='xl' color="#2B4865" cursor="pointer">{`Hi ${data?.firstName || ""}`}</Text>
-
       </Box>
       <form
         onSubmit={e => {
@@ -126,6 +153,14 @@ export const Details = () => {
         </Box>
         <Box width="60%" m="auto">
           <Text fontSize="xl">{chatResponse}</Text>
+          {isBotQuestion && (<><Text fontSize="xl" color='rgb(0, 123, 255)	' fontWeight="bold">{`Chatbot:${botQuestion?.question}`}</Text>
+            <Button colorScheme="green" onClick={() => { fireAction(botQuestion?.action) }}>
+              Yes
+            </Button>
+            <Button colorScheme="red" onClick={() => {
+              setChatResponse("");
+              setIsBotQuestion(false);
+            }}>No</Button></>)}
         </Box>
 
         {isProjectManager && (
