@@ -26,9 +26,7 @@ export const Details = () => {
   const [tickets, setTickets] = useState([]);
   const [isProjectManager, setIsProjectManager] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [chatResponse, setChatResponse] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
-  const [linkedQuestion, setLinkedQuestion] = useState({});
   const dispatch = useDispatch();
   const loader = useSelector(state => state.loader.loader);
 
@@ -63,19 +61,20 @@ export const Details = () => {
   async function chat(message) {
     try {
       dispatch(LoaderAction.loaderStart());
-      setChatResponse('');
       setChatHistory([]);
       const time = new Date();
       let res = await API.post('/send-message', { message });
       dispatch(LoaderAction.loaderStop());
-      setChatResponse(res.data.result);
       setChatHistory([{ chatType: "SA", timestamp: generateTime(time), chatItem: { ans: res.data.result } }])
+      if (res?.data?.action) {
+        await automatedFireAction(res?.data?.action);
+      }
       if (res?.data?.linkedQuestion) {
-        setLinkedQuestion(res.data.linkedQuestion);
         setChatHistory((prev) => { return [...prev, { chatType: 'SQ', chatItem: res.data.linkedQuestion, timestamp: generateTime(time) }] });
       }
 
     } catch (error) {
+      dispatch(LoaderAction.loaderStop());
       Swal.fire({
         title: 'Failed!',
         text: error.message,
@@ -84,7 +83,30 @@ export const Details = () => {
       });
     }
   }
-
+  const automatedFireAction = async (actionId) => {
+    try {
+      dispatch(LoaderAction.loaderStart());
+      let res = await API.post('/fire-action', { actionId });
+      dispatch(LoaderAction.loaderStop());
+      const time = new Date();
+      setChatHistory((prev) => {
+        return [...prev, { chatType: "SA", timestamp: generateTime(time), chatItem: { ans: res.data.message } }]
+      });
+      if (res.data?.linkedQuestion) {
+        setChatHistory((prev) => {
+          return [...prev, { chatType: "SQ", chatItem: res.data?.linkedQuestion, timestamp: generateTime(time) }]
+        });
+      }
+    } catch (error) {
+      dispatch(LoaderAction.loaderStop());
+      Swal.fire({
+        title: 'Failed!',
+        text: error.message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    }
+  }
   React.useEffect(() => {
     let token = sessionStorage.getItem('intechnology');
 
@@ -93,10 +115,10 @@ export const Details = () => {
       getUser(token);
     }
   }, []);
-  const fireAction = async (actionId) => {
+  const fireAction = async (actionId, linkedQuestion) => {
     try {
       dispatch(LoaderAction.loaderStart());
-      let res = await API.post('/fire-action', { actionId });
+      let res = await API.post('/fire-action', { actionId, linkedQuestion });
       dispatch(LoaderAction.loaderStop());
       const time = new Date();
       setChatHistory((prev) => {
@@ -110,14 +132,13 @@ export const Details = () => {
       setChatHistory((prev) => {
         return [...prev, { chatType: "SA", timestamp: generateTime(time), chatItem: { ans: res.data.message } }]
       });
-      if (linkedQuestion?.linkedQuestion) {
-
+      if (res.data?.linkedQuestion) {
         setChatHistory((prev) => {
-          return [...prev, { chatType: "SQ", chatItem: linkedQuestion?.linkedQuestion, timestamp: generateTime(time) }]
+          return [...prev, { chatType: "SQ", chatItem: res.data?.linkedQuestion, timestamp: generateTime(time) }]
         });
-        setLinkedQuestion({});
       }
     } catch (error) {
+      dispatch(LoaderAction.loaderStop());
       Swal.fire({
         title: 'Failed!',
         text: error.message,
@@ -128,6 +149,10 @@ export const Details = () => {
   }
 
   const generateTime = (time) => {
+    return time.toLocaleString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
     return time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
   }
   return (
@@ -194,16 +219,16 @@ export const Details = () => {
 
           {chatHistory.length > 0 && chatHistory?.map((item) => {
             if (item?.chatType === "SA") {
-              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl">{item.chatItem.ans}</Text>
+              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl" width={'80%'}>{item.chatItem.ans}</Text>
                 <Text fontSize="sm">{item.timestamp}</Text>
               </Box>)
             }
             else if (item?.chatType === "SQ") {
-              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl" color='rgb(0, 123, 255)	' fontWeight="bold">{item?.chatItem?.question}</Text> <Text fontSize="sm">{item.timestamp}</Text>
+              return (<Box display="flex" justifyContent="space-between" marginBottom={'15px'} marginTop={'15px'}><Text fontSize="xl" width={'80%'} color='rgb(0, 123, 255)	' fontWeight="bold">{item?.chatItem?.question}</Text> <Text fontSize="sm">{item.timestamp}</Text>
               </Box>)
             }
             else if (item?.chatType === "UA") {
-              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl">{item?.chatItem?.ans}</Text>
+              return (<Box display="flex" justifyContent="flex-end" alignItems={'center'}><Text fontSize="xl" marginRight={'100px'} color='green' fontWeight={'bold'}>{item?.chatItem?.ans}</Text>
                 <Text fontSize="sm">{item.timestamp}</Text>
               </Box>)
             }
@@ -211,7 +236,7 @@ export const Details = () => {
           )}
           {chatHistory?.length > 0 &&
             chatHistory[chatHistory.length - 1].chatType == "SQ" && (<>
-              <Button colorScheme="green" onClick={() => { fireAction(chatHistory[chatHistory?.length - 1].chatItem?.action) }}>
+              <Button colorScheme="green" onClick={() => { fireAction(chatHistory[chatHistory?.length - 1].chatItem?.action, chatHistory[chatHistory?.length - 1].chatItem?.linkedQuestion) }}>
                 Yes
               </Button>
               <Button colorScheme="red" onClick={() => {

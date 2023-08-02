@@ -51,7 +51,7 @@ export const Signup = () => {
 
 
     return (
-        <Box width="600px" margin="50px auto" backgroundColor="#adf7c1" padding="40px" borderRadius="10px">
+        <Box width="600px" margin="50px auto" backgroundColor="#9BCDD2" padding="40px" borderRadius="10px">
             <Formik initialValues={{
                 firstName: "",
                 lastName: "",

@@ -18,7 +18,7 @@ function SiteRoutes() {
                 <Route path='/signup' element={<Signup />} />
                 <Route path='/login' element={<Login />} />
                 <Route path="/feed-question" element={<QuestionFeed />} />
-                <Route path="/question-answer-table" element={<QuestionAnswerDisplay />} />
+                <Route path="/manage-qa" element={<QuestionAnswerDisplay />} />
             </Routes>
 
         </>

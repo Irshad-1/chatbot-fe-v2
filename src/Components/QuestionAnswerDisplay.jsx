@@ -15,8 +15,10 @@ import {
   Select,
   FormLabel,
 } from '@chakra-ui/react';
+import { AiFillPlusCircle } from "react-icons/ai";
 import API from '../Utils/axios';
 import Swal from 'sweetalert2';
+import { NavLink } from 'react-router-dom';
 
 const QuestionAnswerDisplay = () => {
   const [allQuestionAnswer, setAllQuestionAnswer] = useState([]);
@@ -90,7 +92,7 @@ const QuestionAnswerDisplay = () => {
   }
   return (
     <Box>
-      <Box width="40%" margin="auto">
+      <Box width="90%" margin="auto" display="flex" justifyContent="space-between" alignItems={'center'}>
         <FormLabel >
           Filter by Department
           <Select placeholder='Select option' onChange={(e) => {
@@ -99,9 +101,14 @@ const QuestionAnswerDisplay = () => {
           }}>
             {departments.map((item) => {
               return (<option key={item?._id} value={item?._id}>{item?.departmentName}</option>)
-            })}<option>Department</option>
+            })}
           </Select>
         </FormLabel>
+        <Button
+          colorScheme={'blue'}
+        ><AiFillPlusCircle />
+          <NavLink to="/feed-question">Add Question answer</NavLink>
+        </Button>
       </Box>
 
       <Box width="100%">

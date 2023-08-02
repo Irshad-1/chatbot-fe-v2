@@ -57,7 +57,7 @@ export const Login = () => {
     <Box
       width="600px"
       margin="50px auto"
-      backgroundColor="#adf7c1"
+      backgroundColor="#9BCDD2"
       padding="40px"
       borderRadius="10px"
     >

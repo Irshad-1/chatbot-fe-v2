@@ -46,7 +46,7 @@ const QuestionFeed = () => {
   }
 
   return (
-    <Box width="1000px" margin="50px auto" backgroundColor="#adf7c1" padding="40px" borderRadius="10px">
+    <Box width="1000px" margin="50px auto" backgroundColor="#9BCDD2" padding="40px" borderRadius="10px">
       <Formik initialValues={{
         question: "",
         answer: "",
@@ -137,7 +137,7 @@ const QuestionFeed = () => {
                 )
               }
               <FormControl padding="20px 0px">
-                <FormLabel>Linked Question</FormLabel>
+                <FormLabel>Follow-up Question</FormLabel>
                 <Field name="linkedQuestion" as={Select} variant="filled" _focusVisible={{ backgroundColor: "white" }} >
                   <option value="">Choose your option</option>
                   {systemQuestion.length > 0 && systemQuestion.map((item) => {
