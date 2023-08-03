@@ -11,7 +11,7 @@ import {
   Tbody,
   Td,
   Text,
-  CircularProgress
+  CircularProgress, Spinner
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import API from '../Utils/axios';
@@ -159,9 +159,11 @@ export const Details = () => {
     <>
       <Box display="flex" justifyContent="flex-end" marginRight="50px" alignItems="center" position="absolute" right="0" top="25">
 
-        <Text fontSize='xl' color="#2B4865" cursor="pointer" paddingRight="10px">{`Hi ${data?.firstName || ""}`}</Text>
+        <Text fontSize='xl' cursor="pointer" paddingRight="10px" >{`Hi ${data?.firstName || ""}`}</Text>
         <Button
-          colorScheme="red"
+          backgroundColor={'#EE6CAC'}
+          color={'white'}
+          fontStyle={'italic'}
           onClick={handleLogout}
         >
           Logout
@@ -192,7 +194,7 @@ export const Details = () => {
           boxShadow="lg"
           p="6"
           rounded="md"
-          bg="#d9d9d9"
+          bg="#ECECEC"
           display="flex"
         >
           <Input
@@ -203,55 +205,51 @@ export const Details = () => {
             bg="white"
             marginRight={'20px'}
           />
-          <Button colorScheme="green" fontSize="30px" type="submit">
+          <Button backgroundColor={'#44A6F5'} color='white' fontSize="30px" type="submit">
             <AiOutlineSend />
           </Button>
 
         </Box>
-        {loader ? <Box display="flex" justifyContent="center">
-          <CircularProgress
-            isIndeterminate
-            color="blue.600"
-            size="200px"
-            thickness="5px"
-          />
-        </Box> : chatHistory.length > 0 && (<Box width="60%" m="auto" bg="#DDE6ED" padding="20px" rounded="md">
-
+        <Box width="60%" m="auto" >
           {chatHistory.length > 0 && chatHistory?.map((item) => {
             if (item?.chatType === "SA") {
-              return (<Box display="flex" justifyContent="space-between"><Text fontSize="xl" width={'80%'}>{item.chatItem.ans}</Text>
-                <Text fontSize="sm">{item.timestamp}</Text>
+              return (<Box display="flex" justifyContent="space-between" backgroundColor={'#f0f0f2'} maxWidth={'100%'} width={'max-content'} rounded="md" padding={'20px'}><Text fontSize="l">{item.chatItem.ans}</Text>
+                <Text fontSize="sm" marginLeft='10px' alignSelf={'end'} whiteSpace={'nowrap'}>{item.timestamp}</Text>
               </Box>)
             }
             else if (item?.chatType === "SQ") {
-              return (<Box display="flex" justifyContent="space-between" marginBottom={'15px'} marginTop={'15px'}><Text fontSize="xl" width={'80%'} color='rgb(0, 123, 255)	' fontWeight="bold">{item?.chatItem?.question}</Text> <Text fontSize="sm">{item.timestamp}</Text>
+              return (<Box display="flex" width={'max-content'} justifyContent={'space-between'} maxWidth={'100%'} marginBottom={'15px'} backgroundColor={'#f0f0f2'} rounded="md" padding={'20px'} marginTop={'15px'}><Text fontSize="l" fontWeight="bold">{item?.chatItem?.question}</Text> <Text fontSize="sm" marginLeft='10px' alignSelf={'end'} whiteSpace={'nowrap'}>{item.timestamp}</Text>
               </Box>)
             }
             else if (item?.chatType === "UA") {
-              return (<Box display="flex" justifyContent="flex-end" alignItems={'center'}><Text fontSize="xl" marginRight={'100px'} color='green' fontWeight={'bold'}>{item?.chatItem?.ans}</Text>
-                <Text fontSize="sm">{item.timestamp}</Text>
+              return (<Box display={'flex'} justifyContent={'flex-end'}>
+                <Box display="flex" marginBottom={'10px'} alignItems={'center'} backgroundColor={'#dcefff'} rounded="md" padding={'20px'} width={'max-content'} ><Text fontSize="l" fontWeight={'bold'}>{item?.chatItem?.ans}</Text>
+                  <Text fontSize="sm" marginLeft='10px' alignSelf={'end'}>{item.timestamp}</Text>
+                </Box>
               </Box>)
             }
           }
           )}
-          {chatHistory?.length > 0 &&
-            chatHistory[chatHistory.length - 1].chatType == "SQ" && (<>
-              <Button colorScheme="green" onClick={() => { fireAction(chatHistory[chatHistory?.length - 1].chatItem?.action, chatHistory[chatHistory?.length - 1].chatItem?.linkedQuestion) }}>
+          {!loader && chatHistory?.length > 0 &&
+            chatHistory[chatHistory.length - 1].chatType == "SQ" && (<Box display={'flex'} justifyContent={'flex-end'} marginBottom={'20px'}>
+              <Button backgroundColor={'#44A6F5'} color='white' marginRight={'20px'} padding={'0px 30px'} onClick={() => { fireAction(chatHistory[chatHistory?.length - 1].chatItem?.action, chatHistory[chatHistory?.length - 1].chatItem?.linkedQuestion) }}>
                 Yes
               </Button>
-              <Button colorScheme="red" onClick={() => {
-                const time = new Date();
-                setChatHistory((prev) => {
-                  return [...prev, {
-                    chatType: "UA", timestamp: generateTime(time), chatItem: {
-                      ans: "No"
-                    }
-                  }]
-                }
-                );
-              }}>No</Button></>
+              <Button backgroundColor={'#EE6CAC'} padding={'0px 30px'}
+                color={'white'} onClick={() => {
+                  const time = new Date();
+                  setChatHistory((prev) => {
+                    return [...prev, {
+                      chatType: "UA", timestamp: generateTime(time), chatItem: {
+                        ans: "No"
+                      }
+                    }]
+                  }
+                  );
+                }}>No</Button></Box>
             )
           }
+
 
 
 
@@ -274,8 +272,10 @@ export const Details = () => {
             <Button colorScheme="red" onClick={() => {
               setIsBotQuestion(false);
             }}>No</Button></>)} */}
-        </Box>)}
 
+          {loader && <Box display={'flex'} justifyContent={'center'}> <Spinner size={'xl'} /></Box>}
+
+        </Box>
         {isProjectManager && (
           <Box width="80%" margin="40px auto">
             <Table colorScheme="facebook" variant="striped">

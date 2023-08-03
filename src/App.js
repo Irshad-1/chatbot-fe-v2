@@ -4,13 +4,15 @@ import {
   theme,
   Heading,
   CircularProgress,
+  Image,
   Box,
   Button,
 } from '@chakra-ui/react';
 import { useSelector } from 'react-redux';
 import SiteRoutes from './Components/common/SiteRoutes';
 import { BrowserRouter, NavLink, useLocation } from 'react-router-dom';
-
+// import './assets/style.css';
+import Logo from "./assets/img/int25yearslogo.jpg"
 
 function App() {
   const loader = useSelector(state => state.loader.loader);
@@ -18,9 +20,12 @@ function App() {
   const token = sessionStorage.getItem('intechnology');
   return (
     <ChakraProvider theme={theme}>
-      <Heading size="2xl" textAlign="center">
-        INT Helpdesk
-      </Heading>
+      <Box display='flex' alignItems={'center'} justifyContent={'center'} borderBottom={'1px solid #cfd1d2'} paddingBottom={'10px'}>
+        <Image src={Logo} alt="logo" height='60px' marginTop={'7px'} />
+        <Heading size="xl" color="#174EA0" textAlign="center">
+          Helpdesk
+        </Heading>
+      </Box>
       {/* {token && (
         <>
           <Button

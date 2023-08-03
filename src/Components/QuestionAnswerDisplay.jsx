@@ -93,7 +93,7 @@ const QuestionAnswerDisplay = () => {
   return (
     <Box>
       <Box width="90%" margin="auto" display="flex" justifyContent="space-between" alignItems={'center'}>
-        <FormLabel >
+        <FormLabel>
           Filter by Department
           <Select placeholder='Select option' onChange={(e) => {
             setSelectedDepartment(e.target.value);
